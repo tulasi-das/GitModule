@@ -1,4 +1,4 @@
-Import-Module .\GitModule.psm1
+Import-Module .\Moudules\GitModule.psm1
 
 # Specify the name of the module you want to check
 $moduleName = "posh-git"
@@ -12,3 +12,4 @@ else {
     Install-Module -Name $moduleName -Force
     Write-Host "$moduleName has been installed."
 }
+Give-Options
