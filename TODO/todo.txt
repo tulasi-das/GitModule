@@ -1,1 +1,24 @@
-1. 
+1. Git stash (git stash save "stash messge")
+2. Give commit details to the user to choose from (Git Log)
+3. Sqaush two commits --> git merge --Sqaush FirstCommitId..SecondCommitId
+4. To drop a commit locally --> git reset --hard HEAD^(drop the latest commit), git reset --hard <commit-hash>(drop a specific commit)(this will discard the changes) ( we can use git revert, which actually creates a new commit )
+5. To undo a specific commit --> git reset --soft (Commit id) (in edit mode, after this you can again push your changes)
+6. Rebasing a branch with another branch
+    -- checkout to the branch (git chekcout feature)
+    -- git rebase origin/main
+    -- git push -f
+
+7. create a git repo locally and push it to remote
+    -- Set Location where you want to create the git repo
+    -- git init
+    == add a dummy file
+    -- commit tha file locally
+    -- create a repo in remote
+    -- git remote add orign {remote repo link}
+    -- change the branch to main (git branch -M main)(change the name from master to main)
+    -- upstream the local main branch with remote main branch
+    -- push it to remote 
+
+(#TODO: testing is pending)
+8. Create a new remote repo using the github api
+9. 

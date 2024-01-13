@@ -6,7 +6,8 @@ function Give-Options {
     $CloneGitRepo = "Clone Git Repo"
     $createNewbranch = "Create new branch"
     $gitCommit = "Commit to git"
-    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit
+    $showlog = "Show log"
+    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
     Write-Host $selectedOption
@@ -15,6 +16,7 @@ function Give-Options {
         $repoName = Read-Host "Give me the repo Name which you want ot open in vs code"
         Open-VSCode -repoName $repoName
     }
+
     if($selectedOption -eq "Clone Git Repo"){
       $userIn = Read-host "Which repo you would like to clone"
       Clone-GitRepo -repoName $userIn
@@ -29,13 +31,19 @@ function Give-Options {
         $branchName = $inputArray[1]
         Create-NewBranch -repoName $repoName -branchName $branchName
     }
+
     if($selectedOption -eq "Commit to git"){
         $repoName = Read-Host "Give me the repo Name of changes which you want to commit"
         Git-Commit -repoName $repoName
     }
 
+    if($selectedOption -eq "Show log")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you want to show logs"
+        $chooseCommit = Read-Host "Do yo want to choose commit(yes/no)"
+        Show-log -repoName $repoName -chooseCommit $chooseCommit
+    }
 }
-
 
 # fucntion to clone the git repository
 function Clone-GitRepo{
@@ -87,6 +95,19 @@ function Set-RootFolerLocaiton{
     Set-Location $fodlerPath
 }
 
+#create a new folder at a default location (Currently used for creating new git repos)
+function Create-NewRepo{
+    param(
+        [Parameter(Mandatory)]
+        $repoName
+    )
+    $fodlerPath = "C:\GitAutomation\$repoName"
+    if(-Not (Test-Path $fodlerPath)){
+        New-Item -Name $repoName -Path $fodlerPath -ItemType Directory
+    }
+    Set-Location $fodlerPath
+}
+
 # do commit to the git in remote
 function Git-Commit{
     param(
@@ -112,7 +133,6 @@ function Git-Commit{
 }
 
 #function for stashing changes and checking out to new branch/create new branch
-
 function Create-NewBranch{
     param(
         [Parameter(Mandatory)]
@@ -137,5 +157,135 @@ function Create-NewBranch{
         }
     }
     Open-VSCode -repoName $repoName
-
 }
+
+#git stash
+function Git-Stash{
+    param(
+        [Parameter(Mandatory)]
+        $repoName
+        )
+    $stashMsg = Read-Host "Give me a stash message"
+    $stashOutput = git stash save $stashMsg
+}
+
+#show the log to the user in grid view
+function Show-log{
+    param(
+        [parameter(Mandatory)]
+        $repoName,
+        $chooseCommit
+    )
+    $defaultLocation = Get-Location
+    Set-RootFolerLocaiton -repoName $repoName
+   
+    if($chooseCommit -eq "yes"){
+        $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
+        $commitArray1 = ($choosenCommit[0] -split ' ')[1]
+        $commitArray2 = ($choosenCommit[1] -split ' ')[1]
+        $firstCommit = $commitArray1
+        $secondCommit = $commitArray2
+    }else{
+        git log | Out-GridView
+    }
+    Set-Location $defaultLocation
+    Squase-Commit -firstCommit $firstCommit -secondCommit $secondCommit
+}
+
+# TODO (Testing is pending) 
+function Squase-Commit{
+    param(
+        [parameter(Mandatory)]
+        $firstCommit,
+        [parameter(Mandatory)]
+        $secondCommit
+    )
+    $squashMsg = git merge -Squase $firstCommit..$secondCommit 2>&1
+    write-hsot $squashMsg
+    code .
+    Write-host "Opening ... and edit your commit message"
+}
+
+# to drop a commit (Testing is pending(TODO:))
+function Drop-Commit{
+    param{
+        [parameter(Mandatory)]
+        $firstCommit,
+        [parameter(Mandatory)]
+        $repoName
+    }
+    Set-RootFolerLocaiton -repoName $repoName
+
+    write-host "Please choose a commit"
+    $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
+    $commitArray1 = ($choosenCommit[0] -split ' ')[1]
+    $dropCommitMsg = git reset --hard $commitArray1 2>&1
+
+    #commit to remote repo 
+    $pushMsg = git push -f 2>&1
+}
+
+# to edit a commit (Testing is pending(TODO:))
+function Edit-Commit{
+    param(
+        [parameter(Mandatory)]
+        $repoName,
+        [parameter(Mandatory)]
+        $commitId
+    )
+    write-host "Plesae choose a commit"
+    $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
+    $commitArray1 = ($choosenCommit[0] -split ' ')[1]
+    $editMsg = git reset --soft $commitArray1 2>&1
+    write-host "Please proceed with your changes"
+}
+
+#rebase branch (Testing is pending(TODO:))
+function Git-RebaseBranch{
+    param(
+        [Parameter(Mandatory)]
+        $rebaseBranch,
+        [Parameter(Mandatory)]
+        $currentBranch
+    )
+    $branch = git branch
+    $branchInVSCode = ($branch -split ' ')[1];
+    if(-Not ($branchInVSCode -eq $currentBranch)){
+        $chekcoutMsg = git checkout $currentBranch
+    }
+    $rebaseMsg = git rebase $rebaseBranch
+    write-host "pushing it to remote"
+    $pushMsg = git push -f
+}
+
+# create new git repo (Testing is pending(TODO:))
+function Init-GITRepo{
+    param(
+        [parameter(Mandatory)]
+        $repoName
+    )
+    Create-NewRepo -repoName $repoName
+    $gitInitMsg = git init
+    write-host "To commit the changes from here to remote you need to have a remote repo, so please craete a remote repo with the same name as local repo"
+    do{
+        $remoteRepoMsg = Read-host "have you created your remote repo(yes/no)"
+        if($remoteRepoMsg -eq "no"){
+            write-host "Okay waiting till you create a remote repo"
+        }
+    }while($remoteRepoMsg -eq "no")
+
+    if($remoteRepoMsg -eq "yes"){
+        $aboutRepo = Read-host "what is this repo about, this will be shown in readme.md file"
+        $fodlerPath = "C:\GitAutomation\$repoName"
+        New-Item -Path $filePath -ItemType File
+        Add-Content -Path $filePath -Value $aboutRepo
+        $stageOutput = git add . 2>&1
+        $commitOutput = git commit -m $commitMessage 2>&1
+        $repoLink = "https://github.com/tulasi-das/$repoName.git"
+        $addingToOrigin = git remote add origin $repoLink 2>&1
+        $changeName = git branch -M main
+        $upstreamMsg = git push --set-upstream origin main
+        $pushBranch = git push -f
+    }
+}
+
