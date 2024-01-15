@@ -7,7 +7,13 @@ function Give-Options {
     $createNewbranch = "Create new branch"
     $gitCommit = "Commit to git"
     $showlog = "Show log"
-    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog
+    $stashChanges = "Stash Changes"
+    $dropCommit = "Drop Commit"
+    $editCommit = "edit commit"
+    $initgitRepo = "Initialise new repository"
+    $rebaseBranch = "Rabase Branch"
+    $squaseCommit = "Squace Commits"
+    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
     Write-Host $selectedOption
@@ -37,11 +43,44 @@ function Give-Options {
         Git-Commit -repoName $repoName
     }
 
-    if($selectedOption -eq "Show log")
+    if($selectedOption -eq "Stash Changes")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want to show logs"
-        $chooseCommit = Read-Host "Do yo want to choose commit(yes/no)"
-        Show-log -repoName $repoName -chooseCommit $chooseCommit
+        $repoName = Read-Host "Give me the repo Name of which you want to stash  changes"
+        Git-Stash -repoName $repoName
+    }
+    if($selectedOption -eq "Drop Commit")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you drop commits"
+        $commitID = Read-Host "Give me the commit ID"
+        Drop-Commit -firstCommit $commitID -repoName $repoName 
+    }
+    if($selectedOption -eq "edit commit")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you want to edit commit"
+        $commitID = Read-host "Give me the commit ID"
+        Edit-Commit -repoName $repoName -commitId $commitID
+    }
+    if($selectedOption -eq "Initialise new repository")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you want Initialise"
+        Init-GITRepo -repoName $repoName
+        
+    }
+    if($selectedOption -eq "Rabase Branch")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you want Rebase"
+        $rebaseBranch = Read-Host "Give me a rebase branch"
+        $currentBranch = Read-host "Give me your "
+        Git-RebaseBranch -repoName $repoName -rebaseBranch $rebaseBranch -currentBranch $currentBranch
+      
+    }
+    if($selectedOption -eq "Squace Commits")
+    {
+        $repoName = Read-Host "Give me the repo Name of which you want to squace commits"
+        $firstCommitId = Read-host "Give me first commit ID"
+        $secondCommitID = Read-host "Give me second commit ID"
+        Squase-Commit -firstCommit $firstCommitId -secondCommit $secondCommitID -executingFromPowershell "yes" -repoName $repoName
+        
     }
 }
 
@@ -73,7 +112,6 @@ function Clone-GitRepo{
     write-host $cloneMsg
     #setting back the default location from where the script is execute
     Set-Location $defaultLocation
-
 }
 
 #function to open a repo in the vs code
@@ -198,11 +236,16 @@ function Squase-Commit{
         [parameter(Mandatory)]
         $firstCommit,
         [parameter(Mandatory)]
-        $secondCommit
+        $secondCommit,
+        $executingFromPowershell,
+        $repoName
     )
-    $squashMsg = git merge -Squase $firstCommit..$secondCommit 2>&1
-    write-hsot $squashMsg
-    code .
+    if($executingFromPowershell -eq "yes"){
+        Set-RootFolerLocaiton -repoName $repoName
+    }
+    $squashMsg = git reset --soft $secondCommit
+    write-host $squashMsg
+    Git-Commit -repoName $repoName
     Write-host "Opening ... and edit your commit message"
 }
 
@@ -246,8 +289,13 @@ function Git-RebaseBranch{
         [Parameter(Mandatory)]
         $rebaseBranch,
         [Parameter(Mandatory)]
-        $currentBranch
+        $currentBranch,
+        [Parameter(Mandatory)]
+        $repoName
     )
+    $defaultLocation = Get-Location
+    $fodlerPath = "C:\GitAutomation\$repoName"
+    Set-Location $fodlerPath
     $branch = git branch
     $branchInVSCode = ($branch -split ' ')[1];
     if(-Not ($branchInVSCode -eq $currentBranch)){
@@ -256,6 +304,7 @@ function Git-RebaseBranch{
     $rebaseMsg = git rebase $rebaseBranch
     write-host "pushing it to remote"
     $pushMsg = git push -f
+    Set-Location $defaultLocation
 }
 
 # create new git repo (Testing is pending(TODO:))
