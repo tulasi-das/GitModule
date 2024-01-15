@@ -51,7 +51,7 @@ function Give-Options {
     if($selectedOption -eq "Drop Commit")
     {
         $repoName = Read-Host "Give me the repo Name of which you drop commits"
-        $commitID = Read-Host "Give me the commit ID"
+        $commitID = Read-Host "Give me the commit ID" 
         Drop-Commit -firstCommit $commitID -repoName $repoName 
     }
     if($selectedOption -eq "edit commit")
@@ -251,21 +251,41 @@ function Squase-Commit{
 
 # to drop a commit (Testing is pending(TODO:))
 function Drop-Commit{
-    param{
+    param(
         [parameter(Mandatory)]
         $firstCommit,
         [parameter(Mandatory)]
         $repoName
-    }
+    )
     Set-RootFolerLocaiton -repoName $repoName
 
     write-host "Please choose a commit"
     $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
-    $commitArray1 = ($choosenCommit[0] -split ' ')[1]
-    $dropCommitMsg = git reset --hard $commitArray1 2>&1
-
+    $commitArray1 = $choosenCommit.split(' ')
+    $branch = git branch
+    $branchInVSCode = ($branch -split ' ')[1]
     #commit to remote repo 
-    $pushMsg = git push -f 2>&1
+    $inputBranch = Read-Host "Is your branch exist in the remote repo(yes/no)"
+    if($inputBranch -eq "yes")
+    {
+        $newCommitMsg = Read-Host "Do you want to create a new commit(yes/no), this is recommended"
+        if($newCommitMsg -eq "yes"){
+            $gitrevertMsg = git revert $commitArray1[1]
+            # $commitMessge = Read-host "Give me a commit message"
+            # $commitOutput = git commit -m $commitMessage 2>&1
+            $pushOutput = git push -f 2>&1
+        }else{
+            write-host "Choose a one commit before of which you want to drop"
+            $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
+            $commitArray1 = $choosenCommit.split(' ')
+            $rebsaeCommitMsg = git rebase -i $commitArray1[1]
+            write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)"
+            $rebaseMsg = git rebase --continue 2>&1
+            $forcePushCommit = git push -f
+        }
+    }else{
+        $pushBranchMsg = git push $repoName ${$branchInVSCode:$branchInVSCode}
+    }
 }
 
 # to edit a commit (Testing is pending(TODO:))
