@@ -12,4 +12,10 @@ else {
     Install-Module -Name $moduleName -Force
     Write-Host "$moduleName has been installed."
 }
+#setting up the core editor to VS Code, this important because, when we are doing rebase we need to open interactive mode in VS Code
+$coreEditor = git config --get core.editor 
+if(-Not($coreEditor -eq "code --wait"))
+{
+    git config --global core.editor "code --wait"
+}
 Give-Options

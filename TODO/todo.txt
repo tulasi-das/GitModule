@@ -7,6 +7,7 @@
     -- checkout to the branch (git chekcout feature)
     -- git rebase origin/main
     -- git push -f
+    (TODO: Testing is pending)
 
 7. create a git repo locally and push it to remote
     -- Set Location where you want to create the git repo
@@ -19,6 +20,5 @@
     -- upstream the local main branch with remote main branch
     -- push it to remote 
 
-(#TODO: testing is pending)
 8. Create a new remote repo using the github api
-9. 
+9. Make sure you have core editor setup as vs code (Set up all these in a single file, which can be used like a setup ()) git config --global core.editor "code --wait"

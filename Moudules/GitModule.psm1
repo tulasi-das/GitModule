@@ -1,7 +1,5 @@
-
-
 function Give-Options {
-  #give user a grid view to choose his input
+    #give user a grid view to choose his input
     $openVsCode = "Open VS code"
     $CloneGitRepo = "Clone Git Repo"
     $createNewbranch = "Create new branch"
@@ -48,24 +46,28 @@ function Give-Options {
         $repoName = Read-Host "Give me the repo Name of which you want to stash  changes"
         Git-Stash -repoName $repoName
     }
+
     if($selectedOption -eq "Drop Commit")
     {
         $repoName = Read-Host "Give me the repo Name of which you drop commits"
-        $commitID = Read-Host "Give me the commit ID" 
-        Drop-Commit -firstCommit $commitID -repoName $repoName 
+        $branchName = Read-host "Give me the branch name on which you want to drop the commit"
+        Drop-Commit -repoName $repoName -branchName $branchName
     }
+
     if($selectedOption -eq "edit commit")
     {
         $repoName = Read-Host "Give me the repo Name of which you want to edit commit"
-        $commitID = Read-host "Give me the commit ID"
-        Edit-Commit -repoName $repoName -commitId $commitID
+        $branchName = Read-host "Give me the commit ID"
+        Edit-Commit -repoName $repoName -branchName $branchName
     }
+
     if($selectedOption -eq "Initialise new repository")
     {
         $repoName = Read-Host "Give me the repo Name of which you want Initialise"
         Init-GITRepo -repoName $repoName
         
     }
+
     if($selectedOption -eq "Rabase Branch")
     {
         $repoName = Read-Host "Give me the repo Name of which you want Rebase"
@@ -74,13 +76,19 @@ function Give-Options {
         Git-RebaseBranch -repoName $repoName -rebaseBranch $rebaseBranch -currentBranch $currentBranch
       
     }
+
     if($selectedOption -eq "Squace Commits")
     {
         $repoName = Read-Host "Give me the repo Name of which you want to squace commits"
-        $firstCommitId = Read-host "Give me first commit ID"
-        $secondCommitID = Read-host "Give me second commit ID"
-        Squase-Commit -firstCommit $firstCommitId -secondCommit $secondCommitID -executingFromPowershell "yes" -repoName $repoName
-        
+        $branchName = Read-host "Give me the branch name "
+        Squase-Commit -repoName $repoName -branchName $branchName
+    }
+
+    if($selectedOption -eq "Show log")
+    {
+        $repoName = Read-host "Give me the repo name of which you want show logs"
+        $branchName = Read-host "Give me the branch name of which you want to show logs"
+        Show-log -repoName $repoName -branchName $branchName
     }
 }
 
@@ -124,7 +132,7 @@ function Open-VSCode{
     code $filePath
     
 }
-function Set-RootFolerLocaiton{
+function Set-RootFolderLocation{
     param(
         [Parameter(Mandatory)]
         $repoName
@@ -176,7 +184,7 @@ function Create-NewBranch{
         [Parameter(Mandatory)]
         $branchName, $repoName
     )
-    Set-RootFolerLocaiton -repoName $repoName
+    Set-RootFolderLocation -repoName $repoName
 
     $changesOnMain = Read-Host "Are thre any changes in the branch(yes/no)"
     if($changesOnMain -eq "yes")
@@ -207,63 +215,67 @@ function Git-Stash{
     $stashOutput = git stash save $stashMsg
 }
 
-#show the log to the user in grid view
+#show the log to the user in grid view(Testing is done)
 function Show-log{
     param(
         [parameter(Mandatory)]
         $repoName,
-        $chooseCommit
+        [Parameter(Mandatory)]
+        $branchName
     )
     $defaultLocation = Get-Location
-    Set-RootFolerLocaiton -repoName $repoName
-   
-    if($chooseCommit -eq "yes"){
-        $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
-        $commitArray1 = ($choosenCommit[0] -split ' ')[1]
-        $commitArray2 = ($choosenCommit[1] -split ' ')[1]
-        $firstCommit = $commitArray1
-        $secondCommit = $commitArray2
-    }else{
-        git log | Out-GridView
+    Set-RootFolderLocation -repoName $repoName
+    $branch = git branch --show-current
+    if(-Not ($branchName -eq $branch))
+    {
+        $gitChangeBrnachMsg = git checkout -$branchName
     }
+    git log | Out-GridView -Title "Logs"
     Set-Location $defaultLocation
-    Squase-Commit -firstCommit $firstCommit -secondCommit $secondCommit
 }
 
-# TODO (Testing is pending) 
+# Testing is done (But still need to check some more conditions)
 function Squase-Commit{
     param(
-        [parameter(Mandatory)]
-        $firstCommit,
-        [parameter(Mandatory)]
-        $secondCommit,
-        $executingFromPowershell,
-        $repoName
+        [Parameter(Mandatory)]
+        $repoName,
+        [Parameter(Mandatory)]
+        $branchName
     )
-    if($executingFromPowershell -eq "yes"){
-        Set-RootFolerLocaiton -repoName $repoName
+    Set-RootFolderLocation -repoName $repoName
+    $branch = git branch --show-current
+    if(-Not ($branchName -eq $branch))
+    {
+        $gitChangeBrnachMsg = git checkout -$branchName
     }
-    $squashMsg = git reset --soft $secondCommit
-    write-host $squashMsg
-    Git-Commit -repoName $repoName
-    Write-host "Opening ... and edit your commit message"
+    write-host "Choose a one commit before of which you want to Squace"
+        $choosenCommit = git log | Out-GridView -Title "Choose the commits" -PassThru
+        $commitArray1 = $choosenCommit.split(' ')
+        $rebsaeCommitMsg = git rebase -i $commitArray1[1]
+        write-host "Write Squace infront of the commit which you want to Squace, save and close the file(if in vim, go to command more and type :wq)"
+        $rebaseMsg = git rebase --continue 2>&1
+        $upstreamBranch = git push --set-upstream origin $branchName
+        $pushChanges = git push -f
 }
 
-# to drop a commit (Testing is pending(TODO:))
+# to drop a commit (Testing is pending(Testing is done ))
 function Drop-Commit{
     param(
         [parameter(Mandatory)]
-        $firstCommit,
+        $branchName,
         [parameter(Mandatory)]
         $repoName
     )
-    Set-RootFolerLocaiton -repoName $repoName
-
+    Set-RootFolderLocation -repoName $repoName
+    $branch = git branch --show-current
+    if(-Not ($branchName -eq $branch))
+    {
+        $gitChangeBrnachMsg = git checkout -$branchName
+    }
     write-host "Please choose a commit"
     $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
     $commitArray1 = $choosenCommit.split(' ')
-    $branch = git branch
-    $branchInVSCode = ($branch -split ' ')[1]
+   
     #commit to remote repo 
     $inputBranch = Read-Host "Is your branch exist in the remote repo(yes/no)"
     if($inputBranch -eq "yes")
@@ -271,8 +283,6 @@ function Drop-Commit{
         $newCommitMsg = Read-Host "Do you want to create a new commit(yes/no), this is recommended"
         if($newCommitMsg -eq "yes"){
             $gitrevertMsg = git revert $commitArray1[1]
-            # $commitMessge = Read-host "Give me a commit message"
-            # $commitOutput = git commit -m $commitMessage 2>&1
             $pushOutput = git push -f 2>&1
         }else{
             write-host "Choose a one commit before of which you want to drop"
@@ -284,22 +294,34 @@ function Drop-Commit{
             $forcePushCommit = git push -f
         }
     }else{
-        $pushBranchMsg = git push $repoName ${$branchInVSCode:$branchInVSCode}
+        write-host "Choose a one commit before of which you want to drop"
+        $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
+        $commitArray1 = $choosenCommit.split(' ')
+        $rebsaeCommitMsg = git rebase -i $commitArray1[1]
+        write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)"
+        $rebaseMsg = git rebase --continue 
+        $pushBranchMsg = git push origin $branch 2>&1
     }
 }
 
-# to edit a commit (Testing is pending(TODO:))
+# to edit a commit (Testing is pending(Testing is done:))
 function Edit-Commit{
     param(
         [parameter(Mandatory)]
         $repoName,
         [parameter(Mandatory)]
-        $commitId
+        $branchName
     )
+    Set-RootFolderLocation -repoName $repoName
+    $branch = git branch --show-current
+    if(-Not ($branchName -eq $branch))
+    {
+        $gitChangeBrnachMsg = git checkout -$branchName
+    }
     write-host "Plesae choose a commit"
     $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
-    $commitArray1 = ($choosenCommit[0] -split ' ')[1]
-    $editMsg = git reset --soft $commitArray1 2>&1
+    $commitArray1 = ($choosenCommit -split ' ')
+    $editMsg = git reset --soft $commitArray1[1] 2>&1
     write-host "Please proceed with your changes"
 }
 
@@ -317,7 +339,7 @@ function Git-RebaseBranch{
     $fodlerPath = "C:\GitAutomation\$repoName"
     Set-Location $fodlerPath
     $branch = git branch
-    $branchInVSCode = ($branch -split ' ')[1];
+    $branchInVSCode = ($branch -split ' ')[1]
     if(-Not ($branchInVSCode -eq $currentBranch)){
         $chekcoutMsg = git checkout $currentBranch
     }
@@ -327,7 +349,7 @@ function Git-RebaseBranch{
     Set-Location $defaultLocation
 }
 
-# create new git repo (Testing is pending(TODO:))
+# create new git repo (testing is done, but still some more is required) (This imagines that the folder was not created and doing it by scratch)
 function Init-GITRepo{
     param(
         [parameter(Mandatory)]
@@ -345,10 +367,11 @@ function Init-GITRepo{
 
     if($remoteRepoMsg -eq "yes"){
         $aboutRepo = Read-host "what is this repo about, this will be shown in readme.md file"
-        $fodlerPath = "C:\GitAutomation\$repoName"
+        $filePath = "C:\GitAutomation\$repoName\README.md"
         New-Item -Path $filePath -ItemType File
         Add-Content -Path $filePath -Value $aboutRepo
         $stageOutput = git add . 2>&1
+        $commitMessage = Read-Host "Give me a initial commit message"
         $commitOutput = git commit -m $commitMessage 2>&1
         $repoLink = "https://github.com/tulasi-das/$repoName.git"
         $addingToOrigin = git remote add origin $repoLink 2>&1
