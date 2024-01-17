@@ -1,4 +1,4 @@
-Import-Module .\Moudules\GitModule.psm1
+Import-Module .\Modules\GitModule.psm1
 
 # Specify the name of the module you want to check
 $moduleName = "posh-git"
