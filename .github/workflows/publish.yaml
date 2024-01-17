@@ -21,7 +21,6 @@ jobs:
         # Example: Publish your module
         $ApiKey = $env:PSGALLERY_API_KEY
         # Publish the module
-        $ModulePath = ${{ github.event.inputs.module-path }}
-        Publish-Module -Path $ModulePath -NuGetApiKey $ApiKey -Force
+        .\publish.ps1
       env:
         PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
