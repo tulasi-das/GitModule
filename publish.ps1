@@ -1,0 +1,1 @@
+Publish-Module -name .\Powershell\Modules\GitModule.psd1 -NuGetApiKey $env:PSGALLERY_API_KEY -Force

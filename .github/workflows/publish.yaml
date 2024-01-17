@@ -1,0 +1,27 @@
+name: Publish to PowerShell Gallery
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  publish:
+    runs-on: windows-latest  # You can adjust the OS as needed
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    # - name: Set up PowerShell
+    #   uses: actions/setup-powershell@v2
+    #   with:
+    #     powershell-version: '7.0'  # You can adjust the PowerShell version as needed
+
+    - name: Publish Module to PowerShell Gallery
+      run: |
+        # Example: Publish your module
+        $ApiKey = $env:PSGALLERY_API_KEY
+        # Publish the module
+        $ModulePath = ${{ github.event.inputs.module-path }}
+        Publish-Module -Path $ModulePath -NuGetApiKey $ApiKey -Force
+      env:
+        PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
