@@ -1,4 +1,4 @@
-Import-Module .\Modules\GitModule.psm1
+Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Modules\GitModule.psm1')
 
 # Specify the name of the module you want to check
 $moduleName = "posh-git"
@@ -19,3 +19,9 @@ if(-Not($coreEditor -eq "code --wait"))
     git config --global core.editor "code --wait"
 }
 Give-Options
+# Get-RepoDetails
+# Init-GITRepo
+# Create-GITRepoUsingAPi
+# List-AllTheContributors
+
+# Delete-Repo
