@@ -538,7 +538,6 @@ function Delete-Repo{
 }
 
 # Function for making a fodler private 
-
 function MakeRepo-Private {
     # Set your GitHub repository details
     $owner = "tulasi-das"
@@ -566,10 +565,6 @@ function MakeRepo-Private {
     if ($response) {
         Write-Host "Repository $owner/$repo set to private successfully."
     } else {
-        Write-H
-
+        Write-Host "Repository is not set to private"
 }
 }
-
-
-
