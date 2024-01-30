@@ -3,3 +3,9 @@
 THIS REPOSITORY CONTAINS POWERSHELL SCRIPTS BY USING WHICH YOU CAN AUTOMATE ENTITRE GIT FLOW
 
 **THIS IS STILL WORK IN PROGRESS**
+
+
+
+To install this module you can use the following command
+
+Install-Module -Name GitModule
