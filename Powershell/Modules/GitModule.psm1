@@ -1,5 +1,29 @@
+#global variables 
+$Global:rootFolderLocation = " "
+$Global:rootFolder = " "
+
+function Install-DependenciesAndConfigs{
+    $moduleName = "posh-git"
+    # Check if the module is installed
+    if (Get-Module -Name $moduleName -ListAvailable) {
+        Write-Host "$moduleName is already installed."
+    }
+    else {
+        # Install the module if it's not installed
+        Install-Module -Name $moduleName -Force
+        Write-Host "$moduleName has been installed."
+    }
+    #setting up the core editor to VS Code, this important because, when we are doing rebase we need to open interactive mode in VS Code
+    $coreEditor = git config --get core.editor 
+    if(-Not($coreEditor -eq "code --wait"))
+    {
+        git config --global core.editor "code --wait"
+    }
+}
+
 function Give-Options {
     #give user a grid view to choose his input
+    $createRoootFolder = "Create Root Folder"
     $openVsCode = "Open VS code"
     $CloneGitRepo = "Clone Git Repo"
     $createNewbranch = "Create new branch"
@@ -14,10 +38,15 @@ function Give-Options {
     $CreteRepoUsingAPI = "Create repo using API"
     $ListAllTheReposUsingAPI = "List all the repos"
     $ListAllTheContributorsOfARepo = "List all the contributors of a repo"
-    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo
+    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo, $createRoootFolder
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
     Write-Host $selectedOption
+    
+    if($selectedOption -eq "Create Root Folder"){
+        $rootFolder = Read-Host "Give me the folder Name, this can be considered as Root Folder"
+        Create-RootFolder -rootFolder $rootFolder
+    }
 
     if($selectedOption -eq "Open VS code"){
         $repoName = Read-Host "Give me the repo Name which you want ot open in vs code"
@@ -107,6 +136,25 @@ function Give-Options {
     }
 }
 
+#function for creating root folder
+function Create-RootFolder{
+    param(
+        [parameter(Mandatory)]
+        $rootFolder
+    )
+    write-host "Creating Root Folder" -ForegroundColor Green
+
+    $FolderPath = "C:\$rootFolder"
+
+    if(-Not (Test-Path $FolderPath)){
+        New-Item -name FolderName -ItemType Directory -Path $FolderPath
+        Write-Host "Root folder $FolderName is created" -ForegroundColor Green
+    }else {
+        Write-Host "The root folder already exists with the name $FolderName" -ForegroundColor Green
+    }
+    $Global:rootFolderLocation = $FolderPath
+    $Global:rootFolder = $rootFolder
+}
 # fucntion to clone the git repository
 function Clone-GitRepo{
     param(
@@ -114,18 +162,22 @@ function Clone-GitRepo{
         $repoName
     )
     $defaultLocation = Get-Location
+    $userName = Read-Host "Please give me your user name"
 
-    $repoLink = "https://github.com/tulasi-das/$repoName.git"
+    $repoLink = "https://github.com/$userName/$repoName.git"
 
     # Creating a folder to store the repo
 
-    $FolderName = Read-Host 'Pleaes give a name to the root folder'
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder"
+        $Global:rootFolder = Read-Host "Please give the Root Folder name"
+    }
 
-    $FolderPath = "C:\$FolderName"
+    $FolderPath = "C:\$Global:rootFolder"
 
     if(-Not (Test-Path $FolderPath)){
         New-Item -name FolderName -ItemType Directory -Path $FolderPath
-        write-hsot "Root folder $FolderName is created" -ForegroundColor Green
+        write-host "Root folder $FolderName is created" -ForegroundColor Green
     }else {
         Write-Host "The root folder already exists with the name $FolderName" -ForegroundColor Green
     }
@@ -143,16 +195,23 @@ function Open-VSCode{
         [Parameter(Mandatory)]
         $repoName
     )
-    $filePath = "C:\GitAutomation\$repoName"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder"
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+    $filePath = "C:\$Global:rootFolder\$repoName"
     code $filePath
-    
 }
 function Set-RootFolderLocation{
     param(
         [Parameter(Mandatory)]
         $repoName
     )
-    $fodlerPath = "C:\GitAutomation\$repoName"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+    $fodlerPath = "C:\$Global:rootFolder\$repoName"
     Set-Location $fodlerPath
 }
 
@@ -162,7 +221,11 @@ function Create-NewRepo{
         [Parameter(Mandatory)]
         $repoName
     )
-    $fodlerPath = "C:\GitAutomation\$repoName"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+    $fodlerPath = "C:\$Global:rootFolder\$repoName"
     if(-Not (Test-Path $fodlerPath)){
         New-Item -Name $repoName -Path $fodlerPath -ItemType Directory
     }
@@ -176,7 +239,11 @@ function Git-Commit{
         $repoName
     )
     $defaultLocation = Get-Location
-    $fodlerPath = "C:\GitAutomation\$repoName"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+    $fodlerPath = "C:\$Global:rootFolder\$repoName"
     Set-Location $fodlerPath
 
     $changesExist = Read-Host "are there any uncommited changes exist: (yes/no)"
@@ -351,7 +418,11 @@ function Git-RebaseBranch{
         $repoName
     )
     $defaultLocation = Get-Location
-    $fodlerPath = "C:\GitAutomation\$repoName"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+    $fodlerPath = "C:\$Global:rootFolder\$repoName"
     Set-Location $fodlerPath
     $branch = git branch
     $branchInVSCode = ($branch -split ' ')[1]
@@ -382,7 +453,11 @@ function Init-GITRepo{
 
     if($remoteRepoMsg -eq "yes"){
         $aboutRepo = Read-host "what is this repo about, this will be shown in readme.md file"
-        $filePath = "C:\GitAutomation\$repoName\README.md"
+    if($Global:rootFolderLocation -eq " "){
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+    }
+        $filePath = "C:\$Global:rootFolder\$repoName"
         New-Item -Path $filePath -ItemType File
         Add-Content -Path $filePath -Value $aboutRepo
         $stageOutput = git add . 2>&1

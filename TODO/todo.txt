@@ -20,5 +20,5 @@
     -- upstream the local main branch with remote main branch
     -- push it to remote 
 
-8. Create a new remote repo using the github api
-9. Make sure you have core editor setup as vs code (Set up all these in a single file, which can be used like a setup ()) git config --global core.editor "code --wait"
+8. Create a new remote repo using the github api --> done 
+9. Make sure you have core editor setup as vs code (Set up all these in a single file, which can be used like a setup ()) git config --global core.editor "code --wait" --> done 
