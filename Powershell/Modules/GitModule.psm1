@@ -38,7 +38,9 @@ function Give-Options {
     $CreteRepoUsingAPI = "Create repo using API"
     $ListAllTheReposUsingAPI = "List all the repos"
     $ListAllTheContributorsOfARepo = "List all the contributors of a repo"
-    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo, $createRoootFolder
+    $setPATasEnvVar = "Set PAT as environment varible"
+    $installDependenciesAndCongigs = "Install dependencies and configs"
+    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo, $createRoootFolder, $setPATasEnvVar, $installDependenciesAndCongigs
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
     Write-Host $selectedOption
@@ -133,6 +135,14 @@ function Give-Options {
     if($selectedOption -eq "List all the contributors of a repo")
     {
         List-AllTheContributors
+    }
+    if($selectedOption -eq "Set PAT as environment varible")
+    {
+        Set-TokenAsEnvVariable   
+    }
+    if($selectedOption -eq "Install dependencies and configs")
+    {
+        Install-DependenciesAndConfigs
     }
 }
 
@@ -642,4 +652,10 @@ function MakeRepo-Private {
     } else {
         Write-Host "Repository is not set to private"
 }
+}
+# setting up $PAT env variable 
+function Set-TokenAsEnvVariable{
+    $PAT = Read-Host "Give me the Personal Access Token"
+    $env:PAT = $PAT 
+    Write-Host "Your token has been set as env variable"
 }
