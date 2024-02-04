@@ -2,7 +2,7 @@
 $Global:rootFolderLocation = " "
 $Global:rootFolder = " "
 
-function Install-DependenciesAndConfigs{
+function Install-DependenciesAndConfigs {
     $moduleName = "posh-git"
     # Check if the module is installed
     if (Get-Module -Name $moduleName -ListAvailable) {
@@ -14,8 +14,8 @@ function Install-DependenciesAndConfigs{
         Write-Host "$moduleName has been installed." -ForegroundColor Green
     }
 
-    #setting up the core editor to VS Code, this important because, when we are doing rebase we need to open interactive mode in VS Code
-    $coreEditor = git config --get core.editor 
+    #setting up the core editor to VS Code, this is important because, when we are doing rebase we need to open interactive mode in VS Code
+    $coreEditor = (git config --get core.editor)
     if(-Not($coreEditor -eq "code --wait"))
     {
         git config --global core.editor "code --wait"
@@ -23,7 +23,7 @@ function Install-DependenciesAndConfigs{
     # Importing the GITAPI module
     Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'GitModuleAPI.psm1')
 }
-# this function isu used to give user a grid view to choose his input
+# this function is used to give user a grid view to choose his input
 function Give-Options {
     $createRoootFolder = "Create Root Folder"
     $openVsCode = "Open VS code"
@@ -33,123 +33,117 @@ function Give-Options {
     $showlog = "Show log"
     $stashChanges = "Stash Changes"
     $dropCommit = "Drop Commit"
-    $editCommit = "edit commit"
+    $editCommit = "Edit commit"
     $initgitRepo = "Initialise new repository"
     $rebaseBranch = "Rabase Branch"
-    $squaseCommit = "Squace Commits"
+    $squaseCommit = "Squash Commits"
     $CreteRepoUsingAPI = "Create repo using API"
-    $ListAllTheReposUsingAPI = "List all the repos"
+    $giveRepoDetails = "Give Repo Details"
     $ListAllTheContributorsOfARepo = "List all the contributors of a repo"
     $setPATasEnvVar = "Set PAT as environment varible"
     $installDependenciesAndCongigs = "Install dependencies and configs"
-    $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo, $createRoootFolder, $setPATasEnvVar, $installDependenciesAndCongigs
+
+    $options = @($openVsCode,
+    $CloneGitRepo,
+    $createNewbranch,
+    $gitCommit,
+    $showlog,
+    $stashChanges,
+    $dropCommit,
+    $editCommit,
+    $initgitRepo,
+    $rebaseBranch,
+    $squaseCommit,
+    $CreteRepoUsingAPI,
+    $ListAllTheContributorsOfARepo,
+    $createRoootFolder,
+    $setPATasEnvVar,
+    $installDependenciesAndCongigs,
+    $giveRepoDetails)
+
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
     Write-Host $selectedOption -ForegroundColor Green
     
-    if($selectedOption -eq "Create Root Folder"){
-        $rootFolder = Read-Host "Give me the folder Name, this can be considered as Root Folder" -ForegroundColor Green
-        Create-RootFolder -rootFolder $rootFolder
-    }
-
-    if($selectedOption -eq "Open VS code"){
-        $repoName = Read-Host "Give me the repo Name which you want ot open in vs code" -ForegroundColor Green
-        Open-VSCode -repoName $repoName
-    }
-
-    if($selectedOption -eq "Clone Git Repo"){
-      $userIn = Read-host "Which repo you would like to clone" -ForegroundColor Green
-      Clone-GitRepo -repoName $userIn
-    }
-
-    if($selectedOption -eq "Create new branch"){
-
-        $userInput = Read-Host "Give me the repo Name and the branch that you wanted to create(Give me a string seperated by comma)" -ForegroundColor Green
-        $inputArray = $userInput -split ','
-        $inputArray = $inputArray.Trim()
-        $repoName = $inputArray[0]
-        $branchName = $inputArray[1]
-        Create-NewBranch -repoName $repoName -branchName $branchName
-    }
-
-    if($selectedOption -eq "Commit to git"){
-        $repoName = Read-Host "Give me the repo Name of changes which you want to commit" -ForegroundColor Green
-        Git-Commit -repoName $repoName
-    }
-
-    if($selectedOption -eq "Stash Changes")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you want to stash  changes" -ForegroundColor Green
-        Git-Stash -repoName $repoName
-    }
-
-    if($selectedOption -eq "Drop Commit")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you drop commits" -ForegroundColor Green
-        $branchName = Read-host "Give me the branch name on which you want to drop the commit" -ForegroundColor Green
-        Drop-Commit -repoName $repoName -branchName $branchName
-    }
-
-    if($selectedOption -eq "edit commit")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you want to edit commit" -ForegroundColor Green
-        $branchName = Read-host "Give me the commit ID" -ForegroundColor Green
-        Edit-Commit -repoName $repoName -branchName $branchName
-    }
-
-    if($selectedOption -eq "Initialise new repository")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you want Initialise" -ForegroundColor Green
-        Init-GITRepo -repoName $repoName
-        
-    }
-
-    if($selectedOption -eq "Rabase Branch")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you want Rebase" -ForegroundColor Green
-        $rebaseBranch = Read-Host "Give me a rebase branch" -ForegroundColor Green
-        $currentBranch = Read-host "Give me your current branch" -ForegroundColor Green
-        Git-RebaseBranch -repoName $repoName -rebaseBranch $rebaseBranch -currentBranch $currentBranch
-      
-    }
-
-    if($selectedOption -eq "Squace Commits")
-    {
-        $repoName = Read-Host "Give me the repo Name of which you want to squace commits" -ForegroundColor Green
-        $branchName = Read-host "Give me the branch name " -ForegroundColor Green
-        Squase-Commit -repoName $repoName -branchName $branchName
-    }
-
-    if($selectedOption -eq "Show log")
-    {
-        $repoName = Read-host "Give me the repo name of which you want show logs" -ForegroundColor Green
-        $branchName = Read-host "Give me the branch name of which you want to show logs"  -ForegroundColor Green
-        Show-log -repoName $repoName -branchName $branchName
-    }
-    if($selectedOption -eq "Create repo using API")
-    {
-        Create-GITRepoUsingAPI
-    }
-    if($selectedOption -eq "Create repo using API")
-    {
-        Get-RepoDetails
-    }
-    if($selectedOption -eq "List all the contributors of a repo")
-    {
-        List-AllTheContributors
-    }
-    if($selectedOption -eq "Set PAT as environment varible")
-    {
-        Set-TokenAsEnvVariable   
-    }
-    if($selectedOption -eq "Install dependencies and configs")
-    {
-        Install-DependenciesAndConfigs
+    switch($selectedOption) {
+        $createRoootFolder {
+            $rootFolder = Read-Host "Give me the folder Name, this can be considered as Root Folder"
+            Create-RootFolder -rootFolder $rootFolder
+        }
+        $openVsCode {
+            $repoName = Read-Host "Give me the repo Name which you want ot open in vs code" 
+            Open-VSCode -repoName $repoName
+        }
+        $CloneGitRepo {
+            $userIn = Read-host "Which repo you would like to clone" 
+            Clone-GitRepo -repoName $userIn
+        }
+        $createNewbranch {
+            $userInput = Read-Host "Give me the repo Name and the branch that you wanted to create(Give me a string seperated by comma)"
+            $inputArray = $userInput -split ','
+            $inputArray = $inputArray.Trim()
+            $repoName = $inputArray[0]
+            $branchName = $inputArray[1]
+            Create-NewBranch -repoName $repoName -branchName $branchName
+        }
+        $gitCommit {
+            $repoName = Read-Host "Give me the repo Name of changes which you want to commit" 
+            Git-Commit -repoName $repoName
+        }
+        $showlog {
+            $repoName = Read-host "Give me the repo name of which you want show logs" 
+            $branchName = Read-host "Give me the branch name of which you want to show logs"
+            Show-log -repoName $repoName -branchName $branchName
+        }
+        $stashChanges {
+            $repoName = Read-Host "Give me the repo Name of which you want to stash  changes" 
+            Git-Stash -repoName $repoName
+        }
+        $dropCommit {
+            $repoName = Read-Host "Give me the repo Name of which you drop commits"
+            $branchName = Read-host "Give me the branch name on which you want to drop the commit" 
+            Drop-Commit -repoName $repoName -branchName $branchName
+        }
+        $editCommit {
+            $repoName = Read-Host "Give me the repo Name of which you want to edit commit"
+            $branchName = Read-host "Give me the commit ID"
+            Edit-Commit -repoName $repoName -branchName $branchName
+        }
+        $initgitRepo {
+            $repoName = Read-Host "Give me the repo Name of which you want Initialise"
+            Init-GITRepo -repoName $repoName
+        }
+        $rebaseBranch {
+            $repoName = Read-Host "Give me the repo Name of which you want Rebase"
+            $rebaseBranch = Read-Host "Give me a rebase branch" 
+            $currentBranch = Read-host "Give me your current branch"
+            Git-RebaseBranch -repoName $repoName -rebaseBranch $rebaseBranch -currentBranch $currentBranch
+        }
+        $squaseCommit {
+            $repoName = Read-Host "Give me the repo Name of which you want to squace commits"
+            $branchName = Read-host "Give me the branch name "
+            Squase-Commit -repoName $repoName -branchName $branchName
+        }
+        $CreteRepoUsingAPI {
+            Create-GITRepoUsingAPI
+        }
+        $giveRepoDetails {
+            Get-RepoDetails
+        }
+        $ListAllTheContributorsOfARepo {
+            List-AllTheContributors
+        }
+        $setPATasEnvVar {
+            Set-TokenAsEnvVariable   
+        }
+        $installDependenciesAndCongigs {
+            Install-DependenciesAndConfigs
+        }
     }
 }
 
 #function for creating root folder
-function Create-RootFolder{
+function Create-RootFolder {
     param(
         [parameter(Mandatory)]
         $rootFolder
@@ -167,8 +161,8 @@ function Create-RootFolder{
     $Global:rootFolderLocation = $FolderPath
     $Global:rootFolder = $rootFolder
 }
-# fucntion to clone the git repository
-function Clone-GitRepo{
+# function to clone the git repository
+function Clone-GitRepo {
     param(
         [Parameter(Mandatory)]
         $repoName
@@ -188,14 +182,14 @@ function Clone-GitRepo{
     $FolderPath = "C:\$Global:rootFolder"
 
     if(-Not (Test-Path $FolderPath)){
-        New-Item -name FolderName -ItemType Directory -Path $FolderPath
-        write-host "Root folder $FolderName is created" -ForegroundColor Green
+        New-Item -name $Global:rootFolder -ItemType Directory -Path $FolderPath
+        write-host "Root folder $Global:rootFolder is created" -ForegroundColor Green
     }
-    # set location to the creted directory
+    # set location to the created directory
     Set-Location $FolderPath 
     $cloneMsg = git clone $repoLink 2>&1
-    write-host $cloneMsg
-    #setting back the default location from where the script is execute
+    write-host $cloneMsg -ForegroundColor Green
+    #setting back the default location from where the script is executed
     Set-Location $defaultLocation
 }
 
@@ -205,8 +199,8 @@ function Open-VSCode{
         [Parameter(Mandatory)]
         $repoName
     )
-    if($Global:rootFolderLocation -eq " "){
-        Write-Host "Seems Like you didn't have root folder"
+    if([string]::IsNullOrEmpty($Global:rootFolderLocation) -or [string]::IsNullOrWhiteSpace($Global:rootFolderLocation)) {
+        Write-Host "Seems Like you didn't have root folder" -ForegroundColor Green
         $Global:rootFolder = Read-Host "Please give the Root Folder Name"
     }
     $filePath = "C:\$Global:rootFolder\$repoName"
@@ -217,7 +211,7 @@ function Set-RootFolderLocation{
         [Parameter(Mandatory)]
         $repoName
     )
-    if($Global:rootFolderLocation -eq " "){
+    if([string]::IsNullOrEmpty($Global:rootFolderLocation) -or [string]::IsNullOrWhiteSpace($Global:rootFolderLocation)) {
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
         $Global:rootFolder = Read-Host "Please give the Root Folder Name"
     }
@@ -231,7 +225,7 @@ function Create-NewRepo{
         [Parameter(Mandatory)]
         $repoName
     )
-    if($Global:rootFolderLocation -eq " "){
+    if([string]::IsNullOrEmpty($Global:rootFolderLocation) -or [string]::IsNullOrWhiteSpace($Global:rootFolderLocation)) {
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
         $Global:rootFolder = Read-Host "Please give the Root Folder Name"
     }
@@ -251,7 +245,7 @@ function Git-Commit{
         $repoName
     )
     $defaultLocation = Get-Location
-    if($Global:rootFolderLocation -eq " "){
+    if([string]::IsNullOrEmpty($Global:rootFolderLocation) -or [string]::IsNullOrWhiteSpace($Global:rootFolderLocation)) {
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
         $Global:rootFolder = Read-Host "Please give the Root Folder Name"
     }
@@ -260,14 +254,14 @@ function Git-Commit{
 
     $changesExist = Read-Host "are there any uncommited changes exist: (yes/no)"
     if ($changesExist -eq "yes"){
-        write-host "Commiting changes to the remote repo"
+        write-host "Commiting changes to the remote repo" -ForegroundColor Green
         $commitMessage = Read-Host "Enter a commit message "
         #stage all the changes 
         $stageOutput = git add . 2>&1
         $commitOutput = git commit -m $commitMessage 2>&1
         $pushOutput = git push -f 2>&1
     } else{
-        Write-Host "Please make your changes and comeback"
+        Write-Host "Please make your changes and comeback" -ForegroundColor Green
     }
     Set-Location $defaultLocation
 }
