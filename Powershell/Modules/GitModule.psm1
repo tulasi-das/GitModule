@@ -1,4 +1,4 @@
-#global variables 
+# global variables 
 $Global:rootFolderLocation = " "
 $Global:rootFolder = " "
 
@@ -6,23 +6,25 @@ function Install-DependenciesAndConfigs{
     $moduleName = "posh-git"
     # Check if the module is installed
     if (Get-Module -Name $moduleName -ListAvailable) {
-        Write-Host "$moduleName is already installed."
+        Write-Host "$moduleName is already installed." -ForegroundColor Green
     }
     else {
         # Install the module if it's not installed
         Install-Module -Name $moduleName -Force
-        Write-Host "$moduleName has been installed."
+        Write-Host "$moduleName has been installed." -ForegroundColor Green
     }
+
     #setting up the core editor to VS Code, this important because, when we are doing rebase we need to open interactive mode in VS Code
     $coreEditor = git config --get core.editor 
     if(-Not($coreEditor -eq "code --wait"))
     {
         git config --global core.editor "code --wait"
     }
+    # Importing the GITAPI module
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'GitModuleAPI.psm1')
 }
-
+# this function isu used to give user a grid view to choose his input
 function Give-Options {
-    #give user a grid view to choose his input
     $createRoootFolder = "Create Root Folder"
     $openVsCode = "Open VS code"
     $CloneGitRepo = "Clone Git Repo"
@@ -43,26 +45,26 @@ function Give-Options {
     $options = $openVsCode, $CloneGitRepo, $createNewbranch, $gitCommit, $showlog, $stashChanges, $dropCommit, $editCommit, $initgitRepo, $rebaseBranch, $squaseCommit, $CreteRepoUsingAPI, $ListAllTheReposUsingAPI, $ListAllTheContributorsOfARepo, $createRoootFolder, $setPATasEnvVar, $installDependenciesAndCongigs
     $selectedOption = $options | Out-GridView -Title "Select an Option" -PassThru
 
-    Write-Host $selectedOption
+    Write-Host $selectedOption -ForegroundColor Green
     
     if($selectedOption -eq "Create Root Folder"){
-        $rootFolder = Read-Host "Give me the folder Name, this can be considered as Root Folder"
+        $rootFolder = Read-Host "Give me the folder Name, this can be considered as Root Folder" -ForegroundColor Green
         Create-RootFolder -rootFolder $rootFolder
     }
 
     if($selectedOption -eq "Open VS code"){
-        $repoName = Read-Host "Give me the repo Name which you want ot open in vs code"
+        $repoName = Read-Host "Give me the repo Name which you want ot open in vs code" -ForegroundColor Green
         Open-VSCode -repoName $repoName
     }
 
     if($selectedOption -eq "Clone Git Repo"){
-      $userIn = Read-host "Which repo you would like to clone"
+      $userIn = Read-host "Which repo you would like to clone" -ForegroundColor Green
       Clone-GitRepo -repoName $userIn
     }
 
     if($selectedOption -eq "Create new branch"){
 
-        $userInput = Read-Host "Give me the repo Name and the branch that you wanted to create(Give me a string seperated by comma)"
+        $userInput = Read-Host "Give me the repo Name and the branch that you wanted to create(Give me a string seperated by comma)" -ForegroundColor Green
         $inputArray = $userInput -split ','
         $inputArray = $inputArray.Trim()
         $repoName = $inputArray[0]
@@ -71,62 +73,62 @@ function Give-Options {
     }
 
     if($selectedOption -eq "Commit to git"){
-        $repoName = Read-Host "Give me the repo Name of changes which you want to commit"
+        $repoName = Read-Host "Give me the repo Name of changes which you want to commit" -ForegroundColor Green
         Git-Commit -repoName $repoName
     }
 
     if($selectedOption -eq "Stash Changes")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want to stash  changes"
+        $repoName = Read-Host "Give me the repo Name of which you want to stash  changes" -ForegroundColor Green
         Git-Stash -repoName $repoName
     }
 
     if($selectedOption -eq "Drop Commit")
     {
-        $repoName = Read-Host "Give me the repo Name of which you drop commits"
-        $branchName = Read-host "Give me the branch name on which you want to drop the commit"
+        $repoName = Read-Host "Give me the repo Name of which you drop commits" -ForegroundColor Green
+        $branchName = Read-host "Give me the branch name on which you want to drop the commit" -ForegroundColor Green
         Drop-Commit -repoName $repoName -branchName $branchName
     }
 
     if($selectedOption -eq "edit commit")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want to edit commit"
-        $branchName = Read-host "Give me the commit ID"
+        $repoName = Read-Host "Give me the repo Name of which you want to edit commit" -ForegroundColor Green
+        $branchName = Read-host "Give me the commit ID" -ForegroundColor Green
         Edit-Commit -repoName $repoName -branchName $branchName
     }
 
     if($selectedOption -eq "Initialise new repository")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want Initialise"
+        $repoName = Read-Host "Give me the repo Name of which you want Initialise" -ForegroundColor Green
         Init-GITRepo -repoName $repoName
         
     }
 
     if($selectedOption -eq "Rabase Branch")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want Rebase"
-        $rebaseBranch = Read-Host "Give me a rebase branch"
-        $currentBranch = Read-host "Give me your "
+        $repoName = Read-Host "Give me the repo Name of which you want Rebase" -ForegroundColor Green
+        $rebaseBranch = Read-Host "Give me a rebase branch" -ForegroundColor Green
+        $currentBranch = Read-host "Give me your current branch" -ForegroundColor Green
         Git-RebaseBranch -repoName $repoName -rebaseBranch $rebaseBranch -currentBranch $currentBranch
       
     }
 
     if($selectedOption -eq "Squace Commits")
     {
-        $repoName = Read-Host "Give me the repo Name of which you want to squace commits"
-        $branchName = Read-host "Give me the branch name "
+        $repoName = Read-Host "Give me the repo Name of which you want to squace commits" -ForegroundColor Green
+        $branchName = Read-host "Give me the branch name " -ForegroundColor Green
         Squase-Commit -repoName $repoName -branchName $branchName
     }
 
     if($selectedOption -eq "Show log")
     {
-        $repoName = Read-host "Give me the repo name of which you want show logs"
-        $branchName = Read-host "Give me the branch name of which you want to show logs"
+        $repoName = Read-host "Give me the repo name of which you want show logs" -ForegroundColor Green
+        $branchName = Read-host "Give me the branch name of which you want to show logs"  -ForegroundColor Green
         Show-log -repoName $repoName -branchName $branchName
     }
     if($selectedOption -eq "Create repo using API")
     {
-        Create-GITRepoUsingAPi
+        Create-GITRepoUsingAPI
     }
     if($selectedOption -eq "Create repo using API")
     {
@@ -158,7 +160,7 @@ function Create-RootFolder{
 
     if(-Not (Test-Path $FolderPath)){
         New-Item -name FolderName -ItemType Directory -Path $FolderPath
-        Write-Host "Root folder $FolderName is created" -ForegroundColor Green
+        Write-Host "Root folder $rootFolder is created" -ForegroundColor Green
     }else {
         Write-Host "The root folder already exists with the name $FolderName" -ForegroundColor Green
     }
@@ -188,8 +190,6 @@ function Clone-GitRepo{
     if(-Not (Test-Path $FolderPath)){
         New-Item -name FolderName -ItemType Directory -Path $FolderPath
         write-host "Root folder $FolderName is created" -ForegroundColor Green
-    }else {
-        Write-Host "The root folder already exists with the name $FolderName" -ForegroundColor Green
     }
     # set location to the creted directory
     Set-Location $FolderPath 
@@ -235,9 +235,11 @@ function Create-NewRepo{
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
         $Global:rootFolder = Read-Host "Please give the Root Folder Name"
     }
-    $fodlerPath = "C:\$Global:rootFolder\$repoName"
-    if(-Not (Test-Path $fodlerPath)){
+    $fodlerPath = "C:\$Global:rootFolder"
+    if(-Not (Test-Path (Join-Path -Path $fodlerPath -ChildPath $repoName))){
         New-Item -Name $repoName -Path $fodlerPath -ItemType Directory
+    }else{
+        write-host "The repository with name $repoName already exist" -ForegroundColor Green
     }
     Set-Location $fodlerPath
 }
@@ -340,11 +342,11 @@ function Squase-Commit{
     {
         $gitChangeBrnachMsg = git checkout -$branchName
     }
-    write-host "Choose a one commit before of which you want to Squace"
+    write-host "Choose a one commit before of which you want to Squace" -ForegroundColor Green
         $choosenCommit = git log | Out-GridView -Title "Choose the commits" -PassThru
         $commitArray1 = $choosenCommit.split(' ')
         $rebsaeCommitMsg = git rebase -i $commitArray1[1]
-        write-host "Write Squace infront of the commit which you want to Squace, save and close the file(if in vim, go to command more and type :wq)"
+        write-host "Write Squace infront of the commit which you want to Squace, save and close the file(if in vim, go to command more and type :wq)" -ForegroundColor Green
         $rebaseMsg = git rebase --continue 2>&1
         $upstreamBranch = git push --set-upstream origin $branchName
         $pushChanges = git push -f
@@ -369,28 +371,28 @@ function Drop-Commit{
     $commitArray1 = $choosenCommit.split(' ')
    
     #commit to remote repo 
-    $inputBranch = Read-Host "Is your branch exist in the remote repo(yes/no)"
+    $inputBranch = Read-Host "Is your branch exist in the remote repo(yes/no)" -ForegroundColor Green
     if($inputBranch -eq "yes")
     {
-        $newCommitMsg = Read-Host "Do you want to create a new commit(yes/no), this is recommended"
+        $newCommitMsg = Read-Host "Do you want to create a new commit(yes/no), this is recommended" -ForegroundColor Green
         if($newCommitMsg -eq "yes"){
             $gitrevertMsg = git revert $commitArray1[1]
             $pushOutput = git push -f 2>&1
         }else{
-            write-host "Choose a one commit before of which you want to drop"
+            write-host "Choose a one commit before of which you want to drop" -ForegroundColor Green
             $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
             $commitArray1 = $choosenCommit.split(' ')
             $rebsaeCommitMsg = git rebase -i $commitArray1[1]
-            write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)"
+            write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)" -ForegroundColor Green
             $rebaseMsg = git rebase --continue 2>&1
             $forcePushCommit = git push -f
         }
     }else{
-        write-host "Choose a one commit before of which you want to drop"
+        write-host "Choose a one commit before of which you want to drop" -ForegroundColor Green
         $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
         $commitArray1 = $choosenCommit.split(' ')
         $rebsaeCommitMsg = git rebase -i $commitArray1[1]
-        write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)"
+        write-host "Write drop infront of the commit which you want to drop, save and close the file(if in vim, go to command more and type :wq)" -ForegroundColor Green
         $rebaseMsg = git rebase --continue 
         $pushBranchMsg = git push origin $branch 2>&1
     }
@@ -410,11 +412,11 @@ function Edit-Commit{
     {
         $gitChangeBrnachMsg = git checkout -$branchName
     }
-    write-host "Plesae choose a commit"
+    write-host "Plesae choose a commit" -ForegroundColor Yellow
     $choosenCommit = git log | Out-GridView -Title "Choose the two commits" -PassThru
     $commitArray1 = ($choosenCommit -split ' ')
     $editMsg = git reset --soft $commitArray1[1] 2>&1
-    write-host "Please proceed with your changes"
+    write-host "Please proceed with your changes" -ForegroundColor Green
 }
 
 #rebase branch (Testing is pending(TODO:))
@@ -430,7 +432,7 @@ function Git-RebaseBranch{
     $defaultLocation = Get-Location
     if($Global:rootFolderLocation -eq " "){
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
-        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name" -ForegroundColor Green
     }
     $fodlerPath = "C:\$Global:rootFolder\$repoName"
     Set-Location $fodlerPath
@@ -440,7 +442,7 @@ function Git-RebaseBranch{
         $chekcoutMsg = git checkout $currentBranch
     }
     $rebaseMsg = git rebase $rebaseBranch
-    write-host "pushing it to remote"
+    write-host "pushing it to remote" -ForegroundColor Green
     $pushMsg = git push -f
     Set-Location $defaultLocation
 }
@@ -453,25 +455,25 @@ function Init-GITRepo{
     )
     Create-NewRepo -repoName $repoName
     $gitInitMsg = git init
-    write-host "To commit the changes from here to remote you need to have a remote repo, so please craete a remote repo with the same name as local repo"
+    write-host "To commit the changes from here to remote you need to have a remote repo, so please craete a remote repo with the same name as local repo" -ForegroundColor Green
     do{
-        $remoteRepoMsg = Read-host "have you created your remote repo(yes/no)"
+        $remoteRepoMsg = Read-host "have you created your remote repo(yes/no)" -ForegroundColor Green
         if($remoteRepoMsg -eq "no"){
-            write-host "Okay waiting till you create a remote repo"
+            write-host "Okay waiting till you create a remote repo" -ForegroundColor Green
         }
     }while($remoteRepoMsg -eq "no")
 
     if($remoteRepoMsg -eq "yes"){
-        $aboutRepo = Read-host "what is this repo about, this will be shown in readme.md file"
+        $aboutRepo = Read-host "what is this repo about, this will be shown in readme.md file" -ForegroundColor Green
     if($Global:rootFolderLocation -eq " "){
         Write-Host "Seems Like you didn't have root folder" -ForegroundColor Yellow
-        $Global:rootFolder = Read-Host "Please give the Root Folder Name"
+        $Global:rootFolder = Read-Host "Please give the Root Folder Name" -ForegroundColor Green
     }
         $filePath = "C:\$Global:rootFolder\$repoName"
         New-Item -Path $filePath -ItemType File
         Add-Content -Path $filePath -Value $aboutRepo
         $stageOutput = git add . 2>&1
-        $commitMessage = Read-Host "Give me a initial commit message"
+        $commitMessage = Read-Host "Give me a initial commit message" -ForegroundColor Green
         $commitOutput = git commit -m $commitMessage 2>&1
         $repoLink = "https://github.com/tulasi-das/$repoName.git"
         $addingToOrigin = git remote add origin $repoLink 2>&1
@@ -479,183 +481,4 @@ function Init-GITRepo{
         $upstreamMsg = git push --set-upstream origin main
         $pushBranch = git push -f
     }
-}
-
-# function to create a repo using the GITHUB api
-function Create-GITRepoUsingAPi{
-
-    # Set your GitHub personal access token
-    $accessToken = $env:GITHUB_TOKEN
-
-    # Set the repository name
-    $repoName = Read-Host "Give me the repo that you want to creaete"
-
-    # Set the GitHub API endpoint
-    $apiUrl = "https://api.github.com/user/repos"
-    # Create a JSON payload with repository information
-    $jsonPayload = @{
-        name = $repoName
-    } | ConvertTo-Json
-
-    # Set headers with the access token
-    $headers = @{
-        Authorization = "Bearer $accessToken"
-        Accept = "application/vnd.github.v3+json"
-    }
-
-    # Invoke the GitHub API to create the repository
-    $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -Body $jsonPayload
-
-    # Check if the repository was created successfully
-    if ($response) {
-        Write-Host "Repository '$repoName' created successfully."
-    } else {
-        Write-Host "Failed to create the repository."
-        Write-Host $error[0].Exception.Message
-    }
-}
-
-# Fuction for getting all the github repos 
-function Get-RepoDetails{
-    # Set your GitHub personal access token
-    $accessToken = $env:GITHUB_TOKEN
-
-    # Set the owner and repository name
-    $owner = "tulasi-das"
-    $repo = "powershell"
-
-    # Set the GitHub API endpoint for repository details
-    $apiUrl = "https://api.github.com/repos/$owner/$repo"
-
-    # Set headers with the access token
-    $headers = @{
-        Authorization = "Bearer $accessToken"
-        Accept = "application/vnd.github.v3+json"
-    }
-
-    # Invoke the GitHub API to get repository details
-    $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
-
-    # Display repository details
-    Write-Host "Repository Details for $owner/$repo"
-    Write-Host "Name: $($response.name)"
-    Write-Host "Description: $($response.description)"
-    Write-Host "URL: $($response.html_url)"
-    Write-Host "Default Branch: $($response.default_branch)"
-    Write-Host "Created At: $($response.created_at)"
-    Write-Host "Updated At: $($response.updated_at)"
-    # Add more properties as needed
-
-    # You can also output the entire response object by uncommenting the next line
-    # $response | Format-List
-
-    # Check if the request was successful
-    if ($response) {
-        Write-Host "Repository details retrieved successfully."
-    } else {
-        Write-Host "Failed to retrieve repository details."
-        Write-Host $error[0].Exception.Message
-    }
-
-}
-# Funciton to list all the contributors in the repo
-function List-AllTheContributors{
-    # Set your GitHub repository details
-    $owner = "tulasi-das"
-    $repo = Read-Host "Give me a repo name of which you want to list the contributors"
-    $accessToken = $env:GITHUB_TOKEN 
-
-    # Set the GitHub API endpoint for listing contributors
-    $apiUrl = "https://api.github.com/repos/$owner/$repo/contributors"
-
-    # Set headers with the access token
-    $headers = @{
-        Authorization = "Bearer $accessToken"
-        Accept = "application/vnd.github.v3+json"
-    }
-
-    # Invoke the GitHub API to list contributors
-    $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
-
-    # Display contributors
-    Write-Host "Contributors to $owner/$repo"
-    foreach ($contributor in $response) {
-        Write-Host "Login: $($contributor.login), Contributions: $($contributor.contributions)"
-    }
-
-    # Check if the request was successful
-    if ($response) {
-        Write-Host "Contributors listed successfully."
-    } else {
-        Write-Host "Failed to list contributors."
-        Write-Host $error[0].Exception.Message
-    }
-
-}
-
-# Function for deleting a repo
-function Delete-Repo{
-    # Set your GitHub repository details
-    $owner = "tulasi-das"
-    $repo = Read-host "Give me the repo name which you want to delete"
-    $accessToken = $env:GITHUB_TOKEN
-
-    # Set the GitHub API endpoint for deleting a repository
-    $apiUrl = "https://api.github.com/repos/$owner/$repo"
-
-    # Set headers with the access token
-    $headers = @{
-        Authorization = "Bearer $accessToken"
-        Accept = "application/vnd.github.v3+json"
-    }
-
-    # Invoke the GitHub API to delete the repository
-    $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Delete
-
-    # Check if the request was successful
-    if ($response) {
-        Write-Host "Repository $owner/$repo deleted successfully."
-    } else {
-        Write-Host "Failed to delete repository."
-        Write-Host $error[0].Exception.Message
-    }
-
-}
-
-# Function for making a fodler private 
-function MakeRepo-Private {
-    # Set your GitHub repository details
-    $owner = "tulasi-das"
-    $repo = Read-Host "Give Me a repo which you want to private"
-    $accessToken = $env:GITHUB_TOKEN 
-
-    # Set the GitHub API endpoint for updating a repository
-    $apiUrl = "https://api.github.com/repos/$owner/$repo"
-
-    # Create a JSON payload with repository settings
-    $jsonPayload = @{
-        private = $true
-    } | ConvertTo-Json
-
-    # Set headers with the access token
-    $headers = @{
-        Authorization = "Bearer $accessToken"
-        Accept = "application/vnd.github.v3+json"
-    }
-
-    # Invoke the GitHub API to update the repository settings
-    $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Patch -Body $jsonPayload
-
-    # Check if the request was successful
-    if ($response) {
-        Write-Host "Repository $owner/$repo set to private successfully."
-    } else {
-        Write-Host "Repository is not set to private"
-}
-}
-# setting up $PAT env variable 
-function Set-TokenAsEnvVariable{
-    $PAT = Read-Host "Give me the Personal Access Token"
-    $env:PAT = $PAT 
-    Write-Host "Your token has been set as env variable"
 }
