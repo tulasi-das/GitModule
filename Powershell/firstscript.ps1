@@ -21,4 +21,5 @@ if(-Not($coreEditor -eq "code --wait"))
     git config --global core.editor "code --wait"
 }
 
+Install-DependenciesAndConfigs
 Give-Options
