@@ -87,8 +87,8 @@ function Get-RepoDetails{
 # Funciton to list all the contributors in the repo
 function List-AllTheContributors{
     # Set your GitHub repository details
-    $owner = Read-host "Give me the user name" -ForegroundColor Green
-    $repo = Read-Host "Give me a repo name of which you want to list the contributors" -ForegroundColor Green
+    $owner = Read-host "Give me the user name" 
+    $repo = Read-Host "Give me a repo name of which you want to list the contributors"
     if ($env:GITHUB_TOKEN -eq "")
     {
         Set-TokenAsEnvVariable
